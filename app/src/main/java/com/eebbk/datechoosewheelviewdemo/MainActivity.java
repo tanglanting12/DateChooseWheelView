@@ -8,8 +8,6 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.content.DialogInterface;
 
-import com.eebbk.datechoosewheelviewdemo.R;
-
 public class MainActivity extends Activity implements View.OnClickListener,
         DialogInterface.OnClickListener {
     private Button mMonthDayWeek_hour_minuteButton;
