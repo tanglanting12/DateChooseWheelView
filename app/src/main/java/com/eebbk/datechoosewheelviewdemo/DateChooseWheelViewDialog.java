@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.eebbk.datechoosewheelviewdemo.util.ModeConst;
 import com.eebbk.datechoosewheelviewdemo.widget.OnWheelChangedListener;
 import com.eebbk.datechoosewheelviewdemo.widget.OnWheelScrollListener;
 import com.eebbk.datechoosewheelviewdemo.widget.WheelView;
@@ -51,10 +52,6 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
     private Button mCloseDialog;
     private Boolean isHaveSound = true;
     private  int mode;
-    private  int DAYMONTH_WEEK_HOUR_MINUTE = 1;
-    private  int DAYMONTH_HOUR_MINUTE = 2;
-    private  int YEAR_MONTH_DAY = 3;
-    private  int HOUR_MINUTE = 4;
 
     //变量
     private ArrayList<DateObject> arry_date = new ArrayList<DateObject>();
@@ -82,7 +79,6 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
     private int mMinute;
     private int mMonth;
     private int mDayonly;
-    private boolean mBlnTimePickerGone = false;//时间选择是否显示
     private boolean ifHaveWeek = true;
     //常量
     private final int MAX_TEXT_SIZE = 30;
@@ -96,22 +92,15 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
     private AudioManager mAudioManager;
     private HashMap<Integer, Integer> soundPoolMap;
     private float volume;
-    public DateChooseWheelViewDialog(Context context, DateChooseInterface dateChooseInterface) {
-        super(context);
-        this.mContext = context;
-        this.dateChooseInterface = dateChooseInterface;
-        mDialog = new Dialog(context,R.style.dialog);
-        initView();
-        initData();
-        initMonth();
-        initDayOnly();
-    }
-    public DateChooseWheelViewDialog(Context context, DateChooseInterface dateChooseInterface,boolean ifHaveWeek){
+    public DateChooseWheelViewDialog(Context context, DateChooseInterface dateChooseInterface,int mode){
         super(context);
         this.mContext = context;
         this.dateChooseInterface = dateChooseInterface;
         mDialog = new Dialog(context, R.style.dialog);
-        this.ifHaveWeek = ifHaveWeek;
+        if(mode == ModeConst.DAYMONTH_HOUR_MINUTE) {
+            this.ifHaveWeek = false;
+        }
+        this.mode = mode;
         initView();
         initData();
         initMonth();
@@ -536,15 +525,31 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
                 break;
         }
     }
+    public void playBymode(int mode){
+        switch (mode) {
+            case 1:
+                playMonthDayWeek_hour_minute();
+                break;
+            case 2:
+                playMonthDay_hour_minute();
+                break;
+            case 3:
+                playYearmonthday();
+                break;
+            case 4:
+                OnlyPlayHourMinute();
+                break;
+            default:
+                break;
+        }
+    }
     public void playHour_minute(){
-        mode = HOUR_MINUTE;
         OnlyPlayHourMinute();
     }
     public void playMonthDay_hour_minute(){
         playMonthDayWeek_hour_minute();
     }
     public void playYearmonthday(){
-        mode = YEAR_MONTH_DAY;
         mDateWheelView.setVisibility(View.GONE);
         mHourWheelView.setVisibility(View.GONE);
         mMinuteWheelView.setVisibility(View.GONE);
@@ -558,12 +563,6 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
 
     }
     public void  playMonthDayWeek_hour_minute(){
-            if(ifHaveWeek) {
-                mode = DAYMONTH_WEEK_HOUR_MINUTE;
-            }
-            else {
-                mode = DAYMONTH_HOUR_MINUTE;
-            }
             mYearWheelView.setVisibility(View.GONE);
             mMonthWheelView.setVisibility(View.GONE);
             mDayOnlyWhellView.setVisibility(View.GONE);
@@ -745,7 +744,7 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
      * 显示日期选择dialog
      */
     public void showDateChooseDialog() {
-
+        playBymode(mode);
         if (Looper.myLooper() != Looper.getMainLooper()) {
 
             return;

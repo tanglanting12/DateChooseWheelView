@@ -5,11 +5,14 @@ import android.content.Context;
 import android.media.AudioManager;
 import android.media.SoundPool;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.content.DialogInterface;
+
+import com.eebbk.datechoosewheelviewdemo.util.ModeConst;
 
 import java.util.HashMap;
 
@@ -53,11 +56,8 @@ public class MainActivity extends Activity implements View.OnClickListener,
                     @Override
                     public void getDateTime(String time) {
                         mShowContentTextView.setText(time);
-                        if(time!=null)
-                        Log.i("tanglanting",time);
                     }
-                });
-                startDateChooseDialog.playMonthDayWeek_hour_minute();
+                }, ModeConst.DAYMONTH_WEEK_HOUR_MINUTE);
                 startDateChooseDialog.showDateChooseDialog();
                 break;
             case R.id.monthDay_hour_minute://
@@ -66,24 +66,18 @@ public class MainActivity extends Activity implements View.OnClickListener,
                             @Override
                             public void getDateTime(String time) {
                                 mShowContentTextView.setText(time);
-                                if(time!=null)
-                                Log.i("tanglanting",time);
                             }
-                        },false);
-                endDateChooseDialog.playMonthDay_hour_minute();
+                        },ModeConst.DAYMONTH_HOUR_MINUTE);
                 endDateChooseDialog.showDateChooseDialog();
                 break;
-            case R.id.day_month_day://身份证有效期
+            case R.id.day_month_day://
                 DateChooseWheelViewDialog DateChooseDialogYearMonthDay = new DateChooseWheelViewDialog(MainActivity.this,
                         new DateChooseWheelViewDialog.DateChooseInterface() {
                             @Override
                             public void getDateTime(String time) {
                                 mShowContentTextView.setText(time);
-                                if(time!=null)
-                                Log.i("tanglanting",time);
                             }
-                        },false);
-                DateChooseDialogYearMonthDay.playYearmonthday();
+                        },ModeConst.YEAR_MONTH_DAY);
                 DateChooseDialogYearMonthDay.showDateChooseDialog();
 
                 break;
@@ -93,11 +87,8 @@ public class MainActivity extends Activity implements View.OnClickListener,
                             @Override
                             public void getDateTime(String time) {
                                 mShowContentTextView.setText(time);
-                                if(time!=null)
-                                Log.i("tanglanting",time);
                             }
-                        },false);
-                DateChooseDialogHourMinute.playHour_minute();
+                        },ModeConst.HOUR_MINUTE);
                 DateChooseDialogHourMinute.showDateChooseDialog();
                 break;
             default:
