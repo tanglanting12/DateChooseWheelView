@@ -20,12 +20,17 @@ public class DateObject extends Object{
     private String listItem;
 
 
+
+    public  DateObject(String listItem){
+        this.listItem = listItem;
+    }
     /**
      * 日期对象的4个参数构造器，用于设置日期
      * @param year
      * @param month
      * @param day
-     * @author sxzhang
+     * @param ifHaveWeek
+     * @author tanglanting
      */
     public DateObject(int year, int month, int day,boolean ifHaveWeek) {
         super();
@@ -39,7 +44,7 @@ public class DateObject extends Object{
         }
         else {
             if(ifHaveWeek) {
-                this.listItem = month + "月" + day + "日 " + getDayOfWeekCN(this.week);
+                this.listItem = month + "月" + day + "日  " + getDayOfWeekCN(this.week);
             }
             else {
                 this.listItem = month + "月" + day + "日 ";

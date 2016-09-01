@@ -4,12 +4,15 @@ import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.os.Looper;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.eebbk.datechoosewheelviewdemo.util.ModeConst;
@@ -40,18 +43,21 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
     private WheelView mDayOnlyWhellView;
     private WheelView mHourWheelView;
     private WheelView mMinuteWheelView;
+    private WheelView mHourModeWheelView;
     private CalendarTextAdapter mDateAdapter;
     private CalendarTextAdapter mHourAdapter;
     private CalendarTextAdapter mMonthAdapter;
     private CalendarTextAdapter mDayOnlyAdapter;
     private CalendarTextAdapter mMinuteAdapter;
     private CalendarTextAdapter mYearAdapter;
+    private CalendarTextAdapter mHourModeAdapter;
     private TextView mTitleTextView;
     private Button mSureButton;
     private Dialog mDialog;
-    private Button mCloseDialog;
     private Boolean isHaveSound = true;
     private  int mode;
+    private Boolean mHourMode = true;
+    private Boolean mIfAm = true;
 
     //变量
     private ArrayList<DateObject> arry_date = new ArrayList<DateObject>();
@@ -59,6 +65,7 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
     private ArrayList<DateObject> arry_month = new ArrayList<DateObject>();
     private ArrayList<DateObject> arry_dayonly = new ArrayList<DateObject>();
     private ArrayList<DateObject> arry_minute = new ArrayList<DateObject>();
+    private ArrayList<DateObject> arry_hourMode = new ArrayList<DateObject>();
     private ArrayList<DateObject> arry_year = new ArrayList<DateObject>();
 
     private int nowDateId = 0;
@@ -71,6 +78,7 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
     private String mDateStr;
     private String mHourStr;
     private String mMinuteStr;
+    private String mHourModeStr;
     private String mMonthStr;
     private String mDayonlyStr;
     private String mListItemStr;
@@ -81,7 +89,7 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
     private int mDayonly;
     private boolean ifHaveWeek = true;
     //常量
-    private final int MAX_TEXT_SIZE = 30;
+    private final int MAX_TEXT_SIZE = 20;
     private final int MIN_TEXT_SIZE = 20;
 
     private Context mContext;
@@ -110,6 +118,7 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
     private void initData() {
         initYear();
         initDate();
+        initHourMode();
         initHour();
         initMinute();
         initListener();
@@ -253,6 +262,33 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
         });
 
 
+        //上午下午********************************************
+        mHourModeWheelView.addChangingListener(new OnWheelChangedListener() {
+
+            @Override
+            public void onChanged(WheelView wheel, int oldValue, int newValue) {
+                playSound();
+                String currentText = (String) mHourModeAdapter.getItemText(wheel.getCurrentItem());
+                setTextViewStyle(currentText, mHourModeAdapter);
+                mHourModeStr = arry_hourMode.get(wheel.getCurrentItem()).getListItem() + "";
+                setmListItemStrByMode(mode);
+                dateChooseInterface.getDateTime(getmListItemStr());
+            }
+        });
+
+        mHourModeWheelView.addScrollingListener(new OnWheelScrollListener() {
+
+            @Override
+            public void onScrollingStarted(WheelView wheel) {
+
+            }
+
+            @Override
+            public void onScrollingFinished(WheelView wheel) {
+                String currentText = (String) mHourModeAdapter.getItemText(wheel.getCurrentItem());
+                setTextViewStyle(currentText, mHourModeAdapter);
+            }
+        });
         //小时***********************************
         mHourWheelView.addChangingListener(new OnWheelChangedListener() {
 
@@ -262,7 +298,13 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
                 String currentText = (String) mHourAdapter.getItemText(wheel.getCurrentItem());
                 setTextViewStyle(currentText, mHourAdapter);
                 mHourStr = arry_hour.get(wheel.getCurrentItem()).getHour() + "";
-                Log.i("tanglanting",mHourStr+"  "+mode);
+                if(!DateFormat.is24HourFormat(mContext)){
+                   if((oldValue==0&&newValue==11)||(oldValue==11&&newValue==0)){
+                       mIfAm = mIfAm?false:true;
+                       int num = mHourModeWheelView.getCurrentItem() == 0 ? 1:0;
+                       mHourModeWheelView.setCurrentItem(num);
+                   }
+                }
                 setmListItemStrByMode(mode);
                 dateChooseInterface.getDateTime(getmListItemStr());
             }
@@ -340,10 +382,21 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
      * 初始化小时
      */
     private void initHour() {
+        mHourMode = DateFormat.is24HourFormat(mContext);
         Calendar nowCalendar = Calendar.getInstance();
         int nowHour = nowCalendar.get(Calendar.HOUR_OF_DAY);
+        int num = 23;
         arry_hour.clear();
-        for (int i = 0; i <= 23; i++) {
+        if(!mHourMode){
+            num = 11;
+            int apm = nowCalendar.get(Calendar.AM_PM);
+            if(apm == 0)
+                mIfAm = true;
+            else
+                mIfAm =false;
+        }
+
+        for (int i = 0; i <= num; i++) {
             DateObject temp = new DateObject(i,i,true);
             arry_hour.add(temp);
             if (nowHour == i){
@@ -393,10 +446,9 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
         mDayOnlyWhellView = (WheelView) view.findViewById(R.id.dateonly_wv);
         mHourWheelView = (WheelView) view.findViewById(R.id.hour_wv);
         mMinuteWheelView = (WheelView) view.findViewById(R.id.minute_wv);
+        mHourModeWheelView = (WheelView) view.findViewById(R.id.hourmode_wv);
         mSureButton = (Button) view.findViewById(R.id.sure_btn);
-        mCloseDialog = (Button) view.findViewById(R.id.date_choose_close_btn);
         mSureButton.setOnClickListener(this);
-        mCloseDialog.setOnClickListener(this);
         if(getIsHaveSound()) {
             initSound();
         }
@@ -470,10 +522,26 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
         mMonthWheelView.setCyclic(true);
         mDayOnlyWhellView.setViewAdapter(mDayOnlyAdapter);
         mDayOnlyWhellView.setCurrentItem(nowDayOnlyId);
-
-
         mDayonlyStr = arry_dayonly.get(nowDayOnlyId).getListItem();
         setTextViewStyle(mDayonlyStr, mDayOnlyAdapter);
+    }
+    private void initHourMode(){
+        Calendar nowCalendar = Calendar.getInstance();
+        arry_hourMode.clear();
+        arry_hourMode.add(new DateObject("上午"));
+        arry_hourMode.add(new DateObject("下午"));
+        int apm = nowCalendar.get(Calendar.AM_PM);
+        if(apm == 0)
+            mIfAm = true;
+        else
+            mIfAm =false;
+        mHourModeAdapter = new CalendarTextAdapter(mContext, arry_hourMode,apm , MAX_TEXT_SIZE, MIN_TEXT_SIZE);
+        mHourModeWheelView.setVisibleItems(2);
+        mHourModeWheelView.setViewAdapter(mHourModeAdapter);
+        mHourModeWheelView.setCurrentItem(apm);
+        if(DateFormat.is24HourFormat(mContext)) mHourModeWheelView.setVisibility(View.GONE);
+        mHourModeStr = arry_hourMode.get(apm).getListItem();
+        setTextViewStyle(mHourModeStr, mHourModeAdapter);
     }
 
     private void initDayOnly() {
@@ -513,13 +581,19 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
         switch (mode){
             case 1:
             case 2:
-                mListItemStr = mDateStr+"-"+mHourStr+"-"+mMinuteStr;
+                if(mHourMode)
+                   mListItemStr = mDateStr+"-"+mHourStr+"-"+mMinuteStr;
+                else
+                    mListItemStr = mDateStr+"-"+mHourModeStr+"-"+mHourStr+"-"+mMinuteStr;
                 break;
             case 3:
                 mListItemStr = mYearStr+"-"+mMonthStr+"-"+mDayonlyStr;
                 break;
             case 4:
-                mListItemStr = mHourStr+"-"+mMinuteStr;
+                if(mHourMode)
+                    mListItemStr = mHourStr+"-"+mMinuteStr;
+                else
+                    mListItemStr =mHourModeStr+"-"+ mHourStr+"-"+mMinuteStr;
                 break;
             default:
                 break;
@@ -553,6 +627,7 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
         mDateWheelView.setVisibility(View.GONE);
         mHourWheelView.setVisibility(View.GONE);
         mMinuteWheelView.setVisibility(View.GONE);
+        mHourModeWheelView.setVisibility(View.GONE);
 
     }
     public void  OnlyPlayHourMinute(){
@@ -566,6 +641,26 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
             mYearWheelView.setVisibility(View.GONE);
             mMonthWheelView.setVisibility(View.GONE);
             mDayOnlyWhellView.setVisibility(View.GONE);
+            LinearLayout.LayoutParams monthDay = new LinearLayout.LayoutParams( LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        LinearLayout.LayoutParams hourmode = new LinearLayout.LayoutParams( LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+           LinearLayout.LayoutParams hour = new LinearLayout.LayoutParams( LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+         LinearLayout.LayoutParams minute = new LinearLayout.LayoutParams( LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+
+            monthDay.gravity= Gravity.CENTER ;
+           // mDateWheelView.setLayoutParams(monthDay);
+            hourmode.leftMargin =80;
+           if(mHourModeWheelView.getVisibility()!=View.GONE){
+               mHourModeWheelView.setLayoutParams(hourmode);
+           }
+            hour.leftMargin = 100;
+           mHourWheelView.setLayoutParams(hour);
+            minute.leftMargin = 0;
+         //   mMinuteWheelView.setLayoutParams(minute);
+
     }
 
 
@@ -688,8 +783,10 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
      * @param adapter
      */
     public void setTextViewStyle(String curriteItemText, CalendarTextAdapter adapter) {
+
         ArrayList<View> arrayList = adapter.getTestViews();
         int size = arrayList.size();
+        Log.i("setTextViewStyle","as"+curriteItemText+size);
         String currentText;
         for (int i = 0; i < size; i++) {
             TextView textvew = (TextView) arrayList.get(i);
@@ -699,6 +796,7 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
                 textvew.setTextColor(mContext.getResources().getColor(R.color.text_10));
             } else {
                 textvew.setTextSize(TypedValue.COMPLEX_UNIT_SP,MIN_TEXT_SIZE);
+                Log.i("setTextViewStyle","as"+curriteItemText+currentText);
                 textvew.setTextColor(mContext.getResources().getColor(R.color.text_11));
             }
         }
@@ -711,10 +809,6 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
 
                 dismissDialog();
                 break;
-            case R.id.date_choose_close_btn://关闭日期选择对话框
-                dismissDialog();
-                break;
-
             default:
                 break;
         }

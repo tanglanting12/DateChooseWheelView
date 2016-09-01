@@ -59,6 +59,7 @@ public class MainActivity extends Activity implements View.OnClickListener,
                     }
                 }, ModeConst.DAYMONTH_WEEK_HOUR_MINUTE);
                 startDateChooseDialog.showDateChooseDialog();
+                Log.i("tanglanting","duoshao"+ DateFormat.is24HourFormat(this));
                 break;
             case R.id.monthDay_hour_minute://
                 DateChooseWheelViewDialog endDateChooseDialog = new DateChooseWheelViewDialog(MainActivity.this,
