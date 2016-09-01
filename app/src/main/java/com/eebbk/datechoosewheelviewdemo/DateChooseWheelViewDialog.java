@@ -24,12 +24,12 @@ import java.util.HashMap;
 import  android.media.SoundPool;
 import android.media.AudioManager;
 /**
- * 使用说明：1.showLongTerm()是否显示长期选项
- * 2.setTimePickerGone隐藏时间选择
- * 3.接口DateChooseInterface
+ *
+ *
+ * 接口DateChooseInterface
  *
  * 用于时间日期的选择
- * Created by liuhongxia on 2016/4/16.
+ * Created by tanglanting on 2016/9/
  */
 public class DateChooseWheelViewDialog extends Dialog implements View.OnClickListener {
     //控件
@@ -50,6 +50,11 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
     private Dialog mDialog;
     private Button mCloseDialog;
     private Boolean isHaveSound = true;
+    private  int mode;
+    private  int DAYMONTH_WEEK_HOUR_MINUTE = 1;
+    private  int DAYMONTH_HOUR_MINUTE = 2;
+    private  int YEAR_MONTH_DAY = 3;
+    private  int HOUR_MINUTE = 4;
 
     //变量
     private ArrayList<DateObject> arry_date = new ArrayList<DateObject>();
@@ -71,12 +76,12 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
     private String mMinuteStr;
     private String mMonthStr;
     private String mDayonlyStr;
+    private String mListItemStr;
     private int mYear;
     private int mHour;
     private int mMinute;
     private int mMonth;
     private int mDayonly;
-    private boolean mBlnBeLongTerm = false;//是否需要长期
     private boolean mBlnTimePickerGone = false;//时间选择是否显示
     private boolean ifHaveWeek = true;
     //常量
@@ -106,7 +111,7 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
         this.mContext = context;
         this.dateChooseInterface = dateChooseInterface;
         mDialog = new Dialog(context, R.style.dialog);
-        ifHaveWeek = false;
+        this.ifHaveWeek = ifHaveWeek;
         initView();
         initData();
         initMonth();
@@ -148,6 +153,8 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
                 mYearStr = arry_year.get(wheel.getCurrentItem()).getListItem();
                 mYear = arry_year.get(wheel.getCurrentItem()).getYear();
                 notifyUpdateDayOnly(mYear,mMonth);
+                setmListItemStrByMode(mode);
+                dateChooseInterface.getDateTime(getmListItemStr());
 
             }
         });
@@ -176,6 +183,8 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
                 setTextViewStyle(currentText, mDateAdapter);
 //                mDateCalendarTextView.setText(" " + arry_date.get(wheel.getCurrentItem()));
                 mDateStr = arry_date.get(wheel.getCurrentItem()).getListItem();
+                setmListItemStrByMode(mode);
+                dateChooseInterface.getDateTime(getmListItemStr());
             }
         });
 
@@ -205,6 +214,8 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
                 mMonthStr = arry_month.get(wheel.getCurrentItem()).getMonth()+"";
                 mMonth = arry_month.get(wheel.getCurrentItem()).getMonth();
                 notifyUpdateDayOnly(mYear,mMonth);
+                setmListItemStrByMode(mode);
+                dateChooseInterface.getDateTime(getmListItemStr());
             }
         });
 
@@ -232,6 +243,9 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
 //                mDateCalendarTextView.setText(" " + arry_date.get(wheel.getCurrentItem()));
                 mDayonly = arry_dayonly.get(wheel.getCurrentItem()).getDay() ;
                 mDayonlyStr = arry_dayonly.get(wheel.getCurrentItem()).getDay()+"";
+
+                setmListItemStrByMode(mode);
+                dateChooseInterface.getDateTime(getmListItemStr());
             }
         });
 
@@ -259,6 +273,9 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
                 String currentText = (String) mHourAdapter.getItemText(wheel.getCurrentItem());
                 setTextViewStyle(currentText, mHourAdapter);
                 mHourStr = arry_hour.get(wheel.getCurrentItem()).getHour() + "";
+                Log.i("tanglanting",mHourStr+"  "+mode);
+                setmListItemStrByMode(mode);
+                dateChooseInterface.getDateTime(getmListItemStr());
             }
         });
 
@@ -285,6 +302,8 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
                 String currentText = (String) mMinuteAdapter.getItemText(wheel.getCurrentItem());
                 setTextViewStyle(currentText, mMinuteAdapter);
                 mMinuteStr = arry_minute.get(wheel.getCurrentItem()).getMinute() + "";
+                setmListItemStrByMode(mode);
+                dateChooseInterface.getDateTime(getmListItemStr());
             }
         });
 
@@ -498,14 +517,34 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
         mTitleTextView.setText(title);
     }
 
-
+   public String getmListItemStr(){
+       return mListItemStr;
+   }
+    private void setmListItemStrByMode(int mode){
+        switch (mode){
+            case 1:
+            case 2:
+                mListItemStr = mDateStr+"-"+mHourStr+"-"+mMinuteStr;
+                break;
+            case 3:
+                mListItemStr = mYearStr+"-"+mMonthStr+"-"+mDayonlyStr;
+                break;
+            case 4:
+                mListItemStr = mHourStr+"-"+mMinuteStr;
+                break;
+            default:
+                break;
+        }
+    }
     public void playHour_minute(){
+        mode = HOUR_MINUTE;
         OnlyPlayHourMinute();
     }
     public void playMonthDay_hour_minute(){
         playMonthDayWeek_hour_minute();
     }
     public void playYearmonthday(){
+        mode = YEAR_MONTH_DAY;
         mDateWheelView.setVisibility(View.GONE);
         mHourWheelView.setVisibility(View.GONE);
         mMinuteWheelView.setVisibility(View.GONE);
@@ -519,7 +558,12 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
 
     }
     public void  playMonthDayWeek_hour_minute(){
-
+            if(ifHaveWeek) {
+                mode = DAYMONTH_WEEK_HOUR_MINUTE;
+            }
+            else {
+                mode = DAYMONTH_HOUR_MINUTE;
+            }
             mYearWheelView.setVisibility(View.GONE);
             mMonthWheelView.setVisibility(View.GONE);
             mDayOnlyWhellView.setVisibility(View.GONE);
@@ -665,11 +709,7 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.sure_btn://确定选择按钮监听
-                if (mBlnTimePickerGone) {
-                    dateChooseInterface.getDateTime(strTimeToDateFormat(mYearStr, mDateStr), mBlnBeLongTerm);
-                } else {
-                    dateChooseInterface.getDateTime(strTimeToDateFormat(mYearStr, mDateStr , mHourStr , mMinuteStr), mBlnBeLongTerm);
-                }
+
                 dismissDialog();
                 break;
             case R.id.date_choose_close_btn://关闭日期选择对话框
@@ -783,7 +823,7 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
      * 回调选中的时间（默认时间格式"yyyy-MM-dd HH:mm:ss"）
      */
     public interface DateChooseInterface{
-        void getDateTime(String time, boolean longTimeChecked);
+        void getDateTime(String time);
     }
 
 }

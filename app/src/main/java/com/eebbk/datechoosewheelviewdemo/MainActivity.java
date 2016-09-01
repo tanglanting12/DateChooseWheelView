@@ -51,8 +51,10 @@ public class MainActivity extends Activity implements View.OnClickListener,
             case R.id.monthDayWeek_hour_minute://
                 DateChooseWheelViewDialog startDateChooseDialog = new DateChooseWheelViewDialog(MainActivity.this, new DateChooseWheelViewDialog.DateChooseInterface() {
                     @Override
-                    public void getDateTime(String time, boolean longTimeChecked) {
+                    public void getDateTime(String time) {
                         mShowContentTextView.setText(time);
+                        if(time!=null)
+                        Log.i("tanglanting",time);
                     }
                 });
                 startDateChooseDialog.playMonthDayWeek_hour_minute();
@@ -62,8 +64,10 @@ public class MainActivity extends Activity implements View.OnClickListener,
                 DateChooseWheelViewDialog endDateChooseDialog = new DateChooseWheelViewDialog(MainActivity.this,
                         new DateChooseWheelViewDialog.DateChooseInterface() {
                             @Override
-                            public void getDateTime(String time, boolean longTimeChecked) {
+                            public void getDateTime(String time) {
                                 mShowContentTextView.setText(time);
+                                if(time!=null)
+                                Log.i("tanglanting",time);
                             }
                         },false);
                 endDateChooseDialog.playMonthDay_hour_minute();
@@ -73,8 +77,10 @@ public class MainActivity extends Activity implements View.OnClickListener,
                 DateChooseWheelViewDialog DateChooseDialogYearMonthDay = new DateChooseWheelViewDialog(MainActivity.this,
                         new DateChooseWheelViewDialog.DateChooseInterface() {
                             @Override
-                            public void getDateTime(String time, boolean longTimeChecked) {
+                            public void getDateTime(String time) {
                                 mShowContentTextView.setText(time);
+                                if(time!=null)
+                                Log.i("tanglanting",time);
                             }
                         },false);
                 DateChooseDialogYearMonthDay.playYearmonthday();
@@ -85,8 +91,10 @@ public class MainActivity extends Activity implements View.OnClickListener,
                 DateChooseWheelViewDialog DateChooseDialogHourMinute = new DateChooseWheelViewDialog(MainActivity.this,
                         new DateChooseWheelViewDialog.DateChooseInterface() {
                             @Override
-                            public void getDateTime(String time, boolean longTimeChecked) {
+                            public void getDateTime(String time) {
                                 mShowContentTextView.setText(time);
+                                if(time!=null)
+                                Log.i("tanglanting",time);
                             }
                         },false);
                 DateChooseDialogHourMinute.playHour_minute();

@@ -115,7 +115,6 @@ public class DateTimeUtility {
 	 */
 	public static Date covertStringToDate(String paramString1,
 			String paramString2) {
-		Log.i("tanglantingtt",paramString1);
 		if (TextUtils.isEmpty(paramString1)) {
 			return null;
 		}
