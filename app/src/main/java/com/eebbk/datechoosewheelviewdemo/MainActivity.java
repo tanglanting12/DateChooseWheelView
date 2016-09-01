@@ -1,12 +1,17 @@
 package com.eebbk.datechoosewheelviewdemo;
 
 import android.app.Activity;
+import android.content.Context;
+import android.media.AudioManager;
+import android.media.SoundPool;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.content.DialogInterface;
+
+import java.util.HashMap;
 
 public class MainActivity extends Activity implements View.OnClickListener,
         DialogInterface.OnClickListener {
@@ -25,13 +30,13 @@ public class MainActivity extends Activity implements View.OnClickListener,
         mMonthDay_hour_minuteButton = (Button) this.findViewById(R.id.monthDay_hour_minute);
         mDay_month_dayButton = (Button) this.findViewById(R.id.day_month_day);
         mHour_minuteButton = (Button) this.findViewById(R.id.hour_minute);
-
         mShowContentTextView = (TextView) this.findViewById(R.id.show_content_tv);
 
         mMonthDayWeek_hour_minuteButton.setOnClickListener(this);
         mMonthDay_hour_minuteButton.setOnClickListener(this);
         mDay_month_dayButton.setOnClickListener(this);
         mHour_minuteButton.setOnClickListener(this);
+
     }
 
     @Override

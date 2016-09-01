@@ -10,10 +10,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 
-import com.eebbk.datechoosewheelviewdemo.R;
 import com.eebbk.datechoosewheelviewdemo.widget.OnWheelChangedListener;
 import com.eebbk.datechoosewheelviewdemo.widget.OnWheelScrollListener;
 import com.eebbk.datechoosewheelviewdemo.widget.WheelView;
@@ -21,6 +19,10 @@ import com.eebbk.datechoosewheelviewdemo.widget.adapters.AbstractWheelTextAdapte
 
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.HashMap;
+
+import  android.media.SoundPool;
+import android.media.AudioManager;
 /**
  * 使用说明：1.showLongTerm()是否显示长期选项
  * 2.setTimePickerGone隐藏时间选择
@@ -47,7 +49,7 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
     private Button mSureButton;
     private Dialog mDialog;
     private Button mCloseDialog;
-
+    private Boolean isHaveSound = true;
 
     //变量
     private ArrayList<DateObject> arry_date = new ArrayList<DateObject>();
@@ -77,15 +79,18 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
     private boolean mBlnBeLongTerm = false;//是否需要长期
     private boolean mBlnTimePickerGone = false;//时间选择是否显示
     private boolean ifHaveWeek = true;
-
     //常量
     private final int MAX_TEXT_SIZE = 30;
     private final int MIN_TEXT_SIZE = 20;
 
     private Context mContext;
     private DateChooseInterface dateChooseInterface;
-
-
+    private SoundPool sp;
+    private int mLockSoundId;
+    private  int mLockSoundStreamId;
+    private AudioManager mAudioManager;
+    private HashMap<Integer, Integer> soundPoolMap;
+    private float volume;
     public DateChooseWheelViewDialog(Context context, DateChooseInterface dateChooseInterface) {
         super(context);
         this.mContext = context;
@@ -117,6 +122,16 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
     }
 
 
+   public void setIsHaveSound(boolean flag){
+       isHaveSound = flag;
+   }
+    public boolean getIsHaveSound(){
+        return isHaveSound;
+    }
+    private void playSound(){
+        sp.play(soundPoolMap.get(1), volume, volume, 1, 0, 1f);
+
+    }
 
     /**
      * 初始化滚动监听事件
@@ -127,11 +142,13 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
 
             @Override
             public void onChanged(WheelView wheel, int oldValue, int newValue) {
+                playSound();
                 String currentText = (String) mYearAdapter.getItemText(wheel.getCurrentItem());
                 setTextViewStyle(currentText, mYearAdapter);
                 mYearStr = arry_year.get(wheel.getCurrentItem()).getListItem();
                 mYear = arry_year.get(wheel.getCurrentItem()).getYear();
                 notifyUpdateDayOnly(mYear,mMonth);
+
             }
         });
 
@@ -154,6 +171,7 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
 
             @Override
             public void onChanged(WheelView wheel, int oldValue, int newValue) {
+                playSound();
                 String currentText = (String) mDateAdapter.getItemText(wheel.getCurrentItem());
                 setTextViewStyle(currentText, mDateAdapter);
 //                mDateCalendarTextView.setText(" " + arry_date.get(wheel.getCurrentItem()));
@@ -180,6 +198,7 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
 
             @Override
             public void onChanged(WheelView wheel, int oldValue, int newValue) {
+                playSound();
                 String currentText = (String) mMonthAdapter.getItemText(wheel.getCurrentItem());
                 setTextViewStyle(currentText, mMonthAdapter);
 //                mDateCalendarTextView.setText(" " + arry_date.get(wheel.getCurrentItem()));
@@ -193,7 +212,6 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
 
             @Override
             public void onScrollingStarted(WheelView wheel) {
-
             }
 
             @Override
@@ -208,6 +226,7 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
 
             @Override
             public void onChanged(WheelView wheel, int oldValue, int newValue) {
+                playSound();
                 String currentText = (String) mDayOnlyAdapter.getItemText(wheel.getCurrentItem());
                 setTextViewStyle(currentText, mDayOnlyAdapter);
 //                mDateCalendarTextView.setText(" " + arry_date.get(wheel.getCurrentItem()));
@@ -236,6 +255,7 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
 
             @Override
             public void onChanged(WheelView wheel, int oldValue, int newValue) {
+                playSound();
                 String currentText = (String) mHourAdapter.getItemText(wheel.getCurrentItem());
                 setTextViewStyle(currentText, mHourAdapter);
                 mHourStr = arry_hour.get(wheel.getCurrentItem()).getHour() + "";
@@ -261,6 +281,7 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
 
             @Override
             public void onChanged(WheelView wheel, int oldValue, int newValue) {
+                playSound();
                 String currentText = (String) mMinuteAdapter.getItemText(wheel.getCurrentItem());
                 setTextViewStyle(currentText, mMinuteAdapter);
                 mMinuteStr = arry_minute.get(wheel.getCurrentItem()).getMinute() + "";
@@ -366,13 +387,23 @@ public class DateChooseWheelViewDialog extends Dialog implements View.OnClickLis
         mMinuteWheelView = (WheelView) view.findViewById(R.id.minute_wv);
         mSureButton = (Button) view.findViewById(R.id.sure_btn);
         mCloseDialog = (Button) view.findViewById(R.id.date_choose_close_btn);
-
-
         mSureButton.setOnClickListener(this);
         mCloseDialog.setOnClickListener(this);
-
+        if(getIsHaveSound()) {
+            initSound();
+        }
     }
 
+    private void  initSound(){
+        mAudioManager = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
+        //初始化soundPool 对象,第一个参数是允许有多少个声音流同时播放,第2个参数是声音类型,第三个参数是声音的品质
+        sp = new SoundPool(4, AudioManager.STREAM_MUSIC, 100);
+        soundPoolMap = new HashMap<Integer, Integer>();
+        soundPoolMap.put(1, sp.load(mContext, R.raw.lock, 1));
+        float currentSound=mAudioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        float maxSound=mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
+        volume=currentSound/maxSound;
+    }
     /**
      * 初始化日期
      */
